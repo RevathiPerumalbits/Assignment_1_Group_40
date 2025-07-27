@@ -1,1 +1,0 @@
-# Assignment_1_Group_40
