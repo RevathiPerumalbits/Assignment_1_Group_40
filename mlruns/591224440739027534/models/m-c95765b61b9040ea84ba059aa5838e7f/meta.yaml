@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/madha/OneDrive/Desktop/bits/semIII/MLOps/workspace/Assignment_1_Group_40/mlruns/591224440739027534/models/m-c95765b61b9040ea84ba059aa5838e7f/artifacts
+creation_timestamp: 1753620345325
+experiment_id: '591224440739027534'
+last_updated_timestamp: 1753620393182
+model_id: m-c95765b61b9040ea84ba059aa5838e7f
+model_type: null
+name: model
+source_run_id: 7de1ce9fc165422ab45f16925ba582ad
+status: 2
+status_message: null

@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/madha/OneDrive/Desktop/bits/semIII/MLOps/workspace/Assignment_1_Group_40/mlruns/591224440739027534/4c205da9da0c457c804043cd0b83dbf6/artifacts
+end_time: 1753620472472
+entry_point_name: ''
+experiment_id: '591224440739027534'
+lifecycle_stage: active
+run_id: 4c205da9da0c457c804043cd0b83dbf6
+run_name: RandomForestClassifier
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1753620461744
+status: 3
+tags: []
+user_id: madha
