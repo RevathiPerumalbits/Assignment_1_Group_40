@@ -10,6 +10,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 def evaluate_and_register_models(trained_models, X_train):
     """Evaluate models, select the best, register it, and save locally."""
+    logger.info(f"Evaluating models with MLflow tracking URI: {mlflow.get_tracking_uri()}")
+    logger.info(f"MLflow artifact URI: {mlflow.get_artifact_uri()}")
+    # Set MLflow tracking and artifact URIs
+    mlflow.set_tracking_uri("sqlite:///mlruns.db")
+    mlflow.set_artifact_location("file://mlruns")
     best_accuracy = 0
     best_model = None
     best_model_name = ""
@@ -44,12 +49,14 @@ def evaluate_and_register_models(trained_models, X_train):
     mlflow.sklearn.save_model(best_model, save_path, input_example=input_example)
     mlflow.sklearn.log_model(best_model, artifact_path=best_model_name, input_example=input_example)
     
-    print(f"Best model ({best_model_name}) registered with URI: {model_uri}, saved to {save_path}")
+    logger.info(f"Best model ({best_model_name}) registered with URI: {model_uri}, saved to {save_path}")
 
 if __name__ == "__main__":
     # For standalone testing, call train_models first
     from model_train import main
     if not os.getenv("MLFLOW_TRACKING_URI"):
         mlflow.set_tracking_uri("sqlite:///mlruns.db")
+    if not os.getenv("MLFLOW_ARTIFACT_ROOT"):
+        mlflow.set_artifact_location("file://mlruns")
     trained_models, X_train = main()
     evaluate_and_register_models(trained_models, X_train)

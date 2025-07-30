@@ -23,13 +23,17 @@ def train_model(model, model_name, X_train, y_train, X_test, y_test):
         mlflow.log_param("model_name", model_name)
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("f1_score", f1)
-        mlflow.sklearn.log_model(model, model_name)
+        input_example = X_train.iloc[:1] 
+        mlflow.sklearn.log_model(model, artifact_path=model_name, input_example=input_example)
         print(f"{model_name} - Accuracy: {accuracy:.4f}, F1 Score: {f1:.4f}")
         
         return model, accuracy, run.info.run_id
 
 def main():
     """Train multiple models and return their details."""
+    # Set MLflow tracking and artifact URIs
+    mlflow.set_tracking_uri("sqlite:///mlruns.db")
+    mlflow.set_artifact_location("file://mlruns")
     # Load processed data
     X_train = pd.read_csv('data/processed/X_train.csv')
     X_test = pd.read_csv('data/processed/X_test.csv')
@@ -53,6 +57,9 @@ def main():
     return trained_models, X_train
 
 if __name__ == "__main__":
+    # Ensure MLflow tracking and artifact URIs are set for local testing
     if not os.getenv("MLFLOW_TRACKING_URI"):
         mlflow.set_tracking_uri("sqlite:///mlruns.db")
+    if not os.getenv("MLFLOW_ARTIFACT_ROOT"):
+        mlflow.set_artifact_location("file://mlruns")
     trained_models, X_train = main()
