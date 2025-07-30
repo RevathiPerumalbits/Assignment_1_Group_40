@@ -6,6 +6,7 @@ import pandas as pd
 from typing import List
 import os
 import glob
+import sqlite3
 app = FastAPI()
 
 # Load the registered model
@@ -57,7 +58,15 @@ async def predict(data: IrisInput):
 @app.get("/")
 async def root():
     return {"message": "Iris Classification API"}
-
+@app.get("/metrics")
+async def get_metrics():
+    conn = sqlite3.connect('logs/predictions.db')
+    logs = pd.read_sql_query("SELECT * FROM predictions", conn)
+    conn.close()
+    return {
+        "total_predictions": len(logs),
+        "avg_prediction": logs['prediction'].mean() if not logs.empty else 0.0
+    }
 def log_prediction(features, prediction):
     import datetime
     import os
