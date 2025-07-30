@@ -39,15 +39,19 @@ jobs:
       env:
         MLFLOW_TRACKING_URI: sqlite:///mlruns.db
       run: |
+        echo "MLflow tracking URI: $MLFLOW_TRACKING_URI"
         mlflow ui --port 5000 &
         sleep 5  # Wait for MLflow server to start
         python src/model_train.py
+        cp -r mlruns /tmp/mlruns
 
     # Evaluate and register models
     - name: Evaluate and register models
       env:
         MLFLOW_TRACKING_URI: sqlite:///mlruns.db
       run: |
+        echo "MLflow tracking URI: $MLFLOW_TRACKING_URI"
+        cp -r /tmp/mlruns mlruns
         python src/model_evaluate.py
 
     # Build Docker image
@@ -73,6 +77,8 @@ jobs:
       with:
         name: prediction-logs
         path: logs/predictions.csv
+        if-no-files-found: warn
+        include-hidden-files: false
 
     # Upload saved models as artifact
     - name: Upload saved models
@@ -80,6 +86,8 @@ jobs:
       with:
         name: saved-models
         path: saved_models/
+        if-no-files-found: warn
+        include-hidden-files: false
 
     # Upload MLflow artifacts
     - name: Upload MLflow artifacts
@@ -87,3 +95,5 @@ jobs:
       with:
         name: mlflow-artifacts
         path: mlruns/
+        if-no-files-found: warn
+        include-hidden-files: false

@@ -4,9 +4,15 @@ import mlflow.sklearn
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
+import os
+import logging
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def train_model(model, model_name, X_train, y_train, X_test, y_test):
     """Train a single model and log to MLflow."""
+    logger.info(f"Training {model_name} with MLflow tracking URI: {mlflow.get_tracking_uri()}")
     with mlflow.start_run(run_name=model_name) as run:
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
@@ -47,4 +53,6 @@ def main():
     return trained_models, X_train
 
 if __name__ == "__main__":
-    trained_models, _ = main()
+    if not os.getenv("MLFLOW_TRACKING_URI"):
+        mlflow.set_tracking_uri("sqlite:///mlruns.db")
+    trained_models, X_train = main()

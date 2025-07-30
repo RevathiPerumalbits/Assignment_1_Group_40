@@ -3,7 +3,11 @@ import mlflow.sklearn
 from mlflow import MlflowClient
 from datetime import datetime
 import os
+import logging
 
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 def evaluate_and_register_models(trained_models, X_train):
     """Evaluate models, select the best, register it, and save locally."""
     best_accuracy = 0
@@ -38,12 +42,14 @@ def evaluate_and_register_models(trained_models, X_train):
     # Save model with input example for signature
     input_example = X_train.iloc[:1]  # Use first row as input example
     mlflow.sklearn.save_model(best_model, save_path, input_example=input_example)
-    mlflow.sklearn.log_model(best_model, best_model_name, input_example=input_example)
+    mlflow.sklearn.log_model(best_model, artifact_path=best_model_name, input_example=input_example)
     
     print(f"Best model ({best_model_name}) registered with URI: {model_uri}, saved to {save_path}")
 
 if __name__ == "__main__":
     # For standalone testing, call train_models first
     from model_train import main
+    if not os.getenv("MLFLOW_TRACKING_URI"):
+        mlflow.set_tracking_uri("sqlite:///mlruns.db")
     trained_models, X_train = main()
     evaluate_and_register_models(trained_models, X_train)
