@@ -48,7 +48,12 @@ jobs:
       run: |
         rm -rf mlruns mlruns.db mlruns_backup.db
         echo "Cleaned mlruns/ and mlruns.db"
-
+    
+    # Check and trigger re-training
+    - name: Check and trigger re-training
+      env:
+        MLFLOW_TRACKING_URI: sqlite:///mlruns.db
+      run: python src/retrain_trigger.py
     # Train models
     - name: Train models
       env:
