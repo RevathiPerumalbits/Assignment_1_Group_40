@@ -40,10 +40,11 @@ jobs:
         MLFLOW_TRACKING_URI: sqlite:///mlruns.db
       run: |
         echo "MLflow tracking URI: $MLFLOW_TRACKING_URI"
+        echo "MLflow artifact root: $MLFLOW_ARTIFACT_ROOT"
+        ls -la
         mlflow ui --port 5000 &
         sleep 5  # Wait for MLflow server to start
         python src/model_train.py
-        cp -r mlruns /tmp/mlruns
 
     # Evaluate and register models
     - name: Evaluate and register models
@@ -51,13 +52,13 @@ jobs:
         MLFLOW_TRACKING_URI: sqlite:///mlruns.db
       run: |
         echo "MLflow tracking URI: $MLFLOW_TRACKING_URI"
-        cp -r /tmp/mlruns mlruns
+        echo "MLflow artifact root: $MLFLOW_ARTIFACT_ROOT"
+        ls -la mlruns
         python src/model_evaluate.py
 
     # Build Docker image
     - name: Build Docker image
-      run: |
-        cp -r /tmp/mlruns .  # Restore MLflow artifacts for Docker build
+      run: 
         docker build -t iris-mlops-api .
 
     # Run Docker container

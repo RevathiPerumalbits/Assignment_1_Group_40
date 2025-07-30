@@ -14,7 +14,7 @@ def evaluate_and_register_models(trained_models, X_train):
     logger.info(f"MLflow artifact URI: {mlflow.get_artifact_uri()}")
     # Set MLflow tracking and artifact URIs
     mlflow.set_tracking_uri("sqlite:///mlruns.db")
-    mlflow.set_artifact_location("file://mlruns")
+
     best_accuracy = 0
     best_model = None
     best_model_name = ""
@@ -56,7 +56,5 @@ if __name__ == "__main__":
     from model_train import main
     if not os.getenv("MLFLOW_TRACKING_URI"):
         mlflow.set_tracking_uri("sqlite:///mlruns.db")
-    if not os.getenv("MLFLOW_ARTIFACT_ROOT"):
-        mlflow.set_artifact_location("file://mlruns")
     trained_models, X_train = main()
     evaluate_and_register_models(trained_models, X_train)

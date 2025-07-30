@@ -33,16 +33,23 @@ def main():
     """Train multiple models and return their details."""
     # Set MLflow tracking and artifact URIs
     mlflow.set_tracking_uri("sqlite:///mlruns.db")
-    mlflow.set_artifact_location("file://mlruns")
+    #mlflow.set_artifact_location("file://mlruns")
     # Load processed data
     X_train = pd.read_csv('data/processed/X_train.csv')
     X_test = pd.read_csv('data/processed/X_test.csv')
     y_train = pd.read_csv('data/processed/y_train.csv').values.ravel()
     y_test = pd.read_csv('data/processed/y_test.csv').values.ravel()
-    
+    experiment_name = "iris_classification"
     # Set MLflow tracking
     mlflow.set_experiment("iris_classification")
-    
+    try:
+        experiment = mlflow.get_experiment_by_name(experiment_name)
+        if not experiment:
+            mlflow.create_experiment(experiment, artifact_location="file://mlruns")
+        mlflow.set_experiment(experiment_name)
+    except Exception as e:
+        logger.error(f"Error setting up experiment: {e}")
+        raise
     # Train models
     models = [
         (LogisticRegression(max_iter=200), "LogisticRegression"),
@@ -60,6 +67,4 @@ if __name__ == "__main__":
     # Ensure MLflow tracking and artifact URIs are set for local testing
     if not os.getenv("MLFLOW_TRACKING_URI"):
         mlflow.set_tracking_uri("sqlite:///mlruns.db")
-    if not os.getenv("MLFLOW_ARTIFACT_ROOT"):
-        mlflow.set_artifact_location("file://mlruns")
     trained_models, X_train = main()
