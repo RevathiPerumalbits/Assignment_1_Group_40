@@ -77,13 +77,10 @@ jobs:
         docker build -t iris-mlops-api .
         # Push Docker image to Docker Hub
     - name: Push Docker image to Docker Hub
-      env:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
-        echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-        docker tag iris-mlops-api $DOCKERHUB_USERNAME/iris-mlops-api:latest
-        docker push $DOCKERHUB_USERNAME/iris-mlops-api:latest
+        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        docker tag iris-mlops-api ${{ secrets.DOCKERHUB_USERNAME }}/iris-mlops-api:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/iris-mlops-api:latest
 
     # Run Docker container
     - name: Run Docker container
