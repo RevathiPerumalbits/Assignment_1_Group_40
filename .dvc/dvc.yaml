@@ -1,0 +1,14 @@
+stages:
+  load_data:
+    cmd: python src/data_load.py
+    outs:
+      - data/raw/iris.csv
+  preprocess_data:
+    cmd: python src/data_preprocessing.py
+    deps:
+      - data/raw/iris.csv
+    outs:
+      - data/processed/X_train.csv
+      - data/processed/X_test.csv
+      - data/processed/y_train.csv
+      - data/processed/y_test.csv
