@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/madha/OneDrive/Desktop/bits/semIII/MLOps/workspace/Assignment_1_Group_40/mlruns/735915208095242360/models/m-154255d3a6e74fa29900606a31075f64/artifacts
+creation_timestamp: 1753896034800
+experiment_id: '735915208095242360'
+last_updated_timestamp: 1753896042638
+model_id: m-154255d3a6e74fa29900606a31075f64
+model_type: null
+name: RandomForest
+source_run_id: 59c798ab8d084f8cae44ae34f68aafa0
+status: 2
+status_message: null

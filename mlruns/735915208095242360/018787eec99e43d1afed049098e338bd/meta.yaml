@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/madha/OneDrive/Desktop/bits/semIII/MLOps/workspace/Assignment_1_Group_40/mlruns/735915208095242360/018787eec99e43d1afed049098e338bd/artifacts
+end_time: 1753895976849
+entry_point_name: ''
+experiment_id: '735915208095242360'
+lifecycle_stage: active
+run_id: 018787eec99e43d1afed049098e338bd
+run_name: RandomForest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1753895970210
+status: 3
+tags: []
+user_id: madha

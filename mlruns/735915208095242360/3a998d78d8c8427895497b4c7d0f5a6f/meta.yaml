@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/madha/OneDrive/Desktop/bits/semIII/MLOps/workspace/Assignment_1_Group_40/mlruns/735915208095242360/3a998d78d8c8427895497b4c7d0f5a6f/artifacts
+end_time: 1753896034362
+entry_point_name: ''
+experiment_id: '735915208095242360'
+lifecycle_stage: active
+run_id: 3a998d78d8c8427895497b4c7d0f5a6f
+run_name: LogisticRegression
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1753896014852
+status: 3
+tags: []
+user_id: madha
