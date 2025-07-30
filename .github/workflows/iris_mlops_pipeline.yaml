@@ -78,8 +78,8 @@ jobs:
         # Push Docker image to Docker Hub
     - name: Push Docker image to Docker Hub
       env:
-        DOCKERHUB_USERNAME: revathiperumalbits
-        DOCKERHUB_TOKEN: docker1234
+        DOCKERHUB_USERNAME: 2023ad05044
+        DOCKERHUB_TOKEN: dckr_pat_ZsbAqQTXSNFeiXwjffrrhCGI39g
       run: |
         echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
         docker tag iris-mlops-api $DOCKERHUB_USERNAME/iris-mlops-api:latest
