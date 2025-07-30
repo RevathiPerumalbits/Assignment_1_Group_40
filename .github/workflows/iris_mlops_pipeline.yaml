@@ -71,7 +71,7 @@ jobs:
         ls -la mlruns
         python src/model_evaluate.py
 
-    # Build Docker image
+    # Build Docker image build
     - name: Build Docker image
       run: 
         docker build -t iris-mlops-api .
