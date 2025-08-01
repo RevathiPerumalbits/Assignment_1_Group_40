@@ -6,3 +6,4 @@ fastapi
 uvicorn
 pytest
 flake8
+prometheus_client
