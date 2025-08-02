@@ -37,11 +37,11 @@ jobs:
         ls data/raw/iris.csv.dvc
     # Load data
     - name: Load data
-      run: python src/01_data_loader.py
+      run: python src/_01_data_loader.py
 
     # Preprocess data
     - name: Preprocess data
-      run: python src/02_data_preparation.py
+      run: python src/_02_data_preparation.py
         # Clean MLflow artifacts
     - name: Clean MLflow artifacts
       run: |
@@ -52,7 +52,7 @@ jobs:
     - name: Check and trigger re-training
       env:
         MLFLOW_TRACKING_URI: sqlite:///mlruns.db
-      run: python src/03_retrain_trigger.py
+      run: python src/_03_retrain_trigger.py
     # Train models
     - name: Train models
       env:
@@ -63,7 +63,7 @@ jobs:
         ls -la
         mlflow ui --port 5000 &
         sleep 5  # Wait for MLflow server to start
-        python src/04_model_train.py
+        python src/_04_model_train.py
 
     # Evaluate and register models
     - name: Evaluate and register models
@@ -73,7 +73,7 @@ jobs:
         echo "MLflow tracking URI: $MLFLOW_TRACKING_URI"
         echo "MLflow artifact root: $MLFLOW_ARTIFACT_ROOT"
         ls -la mlruns
-        python src/05_model_evaluate.py
+        python src/_05_model_evaluate.py
 
     # Build Docker image build
     - name: Build Docker image
