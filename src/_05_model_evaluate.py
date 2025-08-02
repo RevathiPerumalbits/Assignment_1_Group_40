@@ -53,7 +53,7 @@ def evaluate_and_register_models(trained_models, X_train):
 
 if __name__ == "__main__":
     # For standalone testing, call train_models first
-    from model_train import main
+    from _04_model_train import main
     if not os.getenv("MLFLOW_TRACKING_URI"):
         mlflow.set_tracking_uri("sqlite:///mlruns.db")
     trained_models, X_train = main()

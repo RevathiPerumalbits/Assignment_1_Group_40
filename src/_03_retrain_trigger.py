@@ -2,8 +2,8 @@ import os
 import time
 import logging
 import hashlib
-from model_train import main as train_main
-from model_evaluate import evaluate_and_register_models
+from _04_model_train import main as train_main
+from _05_model_evaluate import evaluate_and_register_models
 
 
 logging.basicConfig(level=logging.INFO)
