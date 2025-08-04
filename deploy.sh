@@ -1,13 +1,63 @@
+
 #!/bin/bash
-docker pull 2023ad05044/iris-mlops-api:latest
-docker run -d -p 8000:8000 2023ad05044/iris-mlops-api:latest
-echo "Iris MLOps API is running on port 8000"
-echo "You can access the API at http://localhost:8000"
-echo "To stop the container, use 'docker stop <container_id>'"
-echo "To remove the container, use 'docker rm <container_id>'"
-echo "To view logs, use 'docker logs <container_id>'"
-echo "To access the MLflow UI, run 'mlflow ui' in a separate terminal"
-echo "MLflow UI will be available at http://localhost:5000"
-echo "Ensure you have the necessary environment variables set for MLflow tracking URI and artifact root"
-echo "For example, you can set them as follows:"
-echo "export MLFLOW_TRACKING_URI=sqlite:///mlruns.db"
+
+# Configuration
+DOCKER_IMAGE="2023ad05044/iris-mlops-api:latest"
+CONTAINER_NAME="iris-mlops-api"
+PORT="8000"
+DOCKERHUB_USERNAME="2023ad05044"
+DOCKERHUB_TOKEN="dckr_pat_7XwXICrPyGFKN9aYUFB4TlWEKE4"
+
+# Validate inputs
+if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+  echo "Error: DOCKERHUB_USERNAME and DOCKERHUB_TOKEN must be provided as arguments"
+  echo "Usage: $0 <dockerhub_username> <dockerhub_token>"
+  exit 1
+fi
+
+# Log in to Docker Hub
+echo "Logging in to Docker Hub..."
+echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+if [ $? -ne 0 ]; then
+  echo "Error: Docker login failed"
+  exit 1
+fi
+
+# Pull the latest Docker image
+echo "Pulling Docker image: $DOCKER_IMAGE"
+docker pull $DOCKER_IMAGE
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to pull Docker image"
+  exit 1
+fi
+
+# Stop and remove existing container if running
+echo "Stopping and removing existing container if it exists..."
+docker stop $CONTAINER_NAME 2>/dev/null || true
+docker rm $CONTAINER_NAME 2>/dev/null || true
+
+# Run the Docker container
+echo "Starting Docker container: $CONTAINER_NAME"
+docker run -d --name $CONTAINER_NAME -p $PORT:8000 $DOCKER_IMAGE
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to start Docker container"
+  exit 1
+fi
+
+# Wait for the container to start
+echo "Waiting for container to be ready..."
+sleep 5
+
+# Test the API endpoints
+echo "Testing /predict endpoint..."
+curl -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}'|| echo "Predict endpoint test failed"
+
+echo "Testing /metrics endpoint..."
+curl "http://localhost:8000/metrics" || echo "Metrics endpoint test failed"
+
+echo "Testing /prometheus endpoint..."
+curl "http://localhost:8000/prometheus" || echo "Prometheus endpoint test failed"
+
+echo "Deployment completed. API is running on http://localhost:8000"
+
+
