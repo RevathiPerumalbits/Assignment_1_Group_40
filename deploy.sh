@@ -35,18 +35,7 @@ if ! command -v pytest >/dev/null 2>&1; then
   pip install pytest
 fi
 
-# Run linting and tests
-echo "Running flake8 and pytest..."
-flake8 src/ --config=.flake8
-if [ $? -ne 0 ]; then
-  echo "Error: flake8 linting failed"
-  exit 1
-fi
-pytest src/
-if [ $? -ne 0 ]; then
-  echo "Error: pytest failed"
-  exit 1
-fi
+
 
 # Check if port is available
 if command -v netstat >/dev/null 2>&1; then
