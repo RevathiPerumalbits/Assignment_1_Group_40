@@ -8,10 +8,43 @@ PORT="${3:-8000}"  # Use third argument or default to 8000
 DOCKERHUB_USERNAME="$1"
 DOCKERHUB_TOKEN="${2:-$DOCKERHUB_TOKEN}"
 
+
 # Validate inputs
 if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
   echo "Error: DOCKERHUB_USERNAME and DOCKERHUB_TOKEN must be provided as arguments or environment variable"
   echo "Usage: $0 <dockerhub_username> [<dockerhub_token>] [<port>]"
+  exit 1
+fi
+# Check for Python and dependencies
+echo "Checking Python and dependencies..."
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Error: python3 not found. Please install Python 3.9."
+  exit 1
+fi
+if ! command -v pip >/dev/null 2>&1; then
+  echo "Error: pip not found. Please install pip."
+  exit 1
+fi
+pip install flake8 pytest >/dev/null 2>&1
+if ! command -v flake8 >/dev/null 2>&1; then
+  echo "Error: flake8 not found. Installing..."
+  pip install flake8
+fi
+if ! command -v pytest >/dev/null 2>&1; then
+  echo "Error: pytest not found. Installing..."
+  pip install pytest
+fi
+
+# Run linting and tests
+echo "Running flake8 and pytest..."
+flake8 src/ --config=.flake8
+if [ $? -ne 0 ]; then
+  echo "Error: flake8 linting failed"
+  exit 1
+fi
+pytest src/
+if [ $? -ne 0 ]; then
+  echo "Error: pytest failed"
   exit 1
 fi
 
@@ -68,6 +101,7 @@ echo "Checking container dependencies..."
 docker exec $CONTAINER_NAME which curl >/dev/null 2>&1 || { echo "Error: curl not found in container"; exit 1; }
 docker exec $CONTAINER_NAME python3 -c "import pandas" >/dev/null 2>&1 || { echo "Error: python3 or pandas not found in container"; exit 1; }
 
+docker logs $CONTAINER_NAME
 # Test the API endpoints
 echo "Testing /predict endpoint..."
 docker exec $CONTAINER_NAME curl -v -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}" > prediction.json

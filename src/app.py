@@ -9,6 +9,8 @@ import os
 import glob
 from prometheus_client import Counter, Histogram,make_asgi_app
 import sqlite3
+import logging
+import time
 app = FastAPI()
 
 # Load the registered model
@@ -17,6 +19,10 @@ app = FastAPI()
 # Prometheus metrics
 REQUEST_COUNT = Counter('iris_api_requests_total', 'Total API requests', ['endpoint'])
 REQUEST_LATENCY = Histogram('iris_api_request_latency_seconds', 'Request latency', ['endpoint'])
+
+# Define Prometheus metrics
+
+PREDICTION_LATENCY = Histogram('prediction_latency_seconds', 'Prediction Latency in seconds', buckets=(0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0))
 
 # Load the latest version of the registered model
 def load_latest_model():
@@ -68,24 +74,31 @@ def init_db():
 init_db()
 @app.post("/predict")
 async def predict(data: IrisInput):
-    try:
-        # Convert input to DataFrame
-        input_df = pd.DataFrame([data.features], columns=[
-            'sepal length (cm)', 'sepal width (cm)', 
-            'petal length (cm)', 'petal width (cm)'
-        ])
-        prediction = model.predict(input_df)[0]
-        conn = sqlite3.connect('logs/predictions.db')
-        c= conn.cursor()
-        c.execute("INSERT INTO predictions (timestamp, features, prediction) VALUES (?, ?, ?)",
-                      (datetime.now().isoformat(), str(data.features), prediction))
-        conn.commit()
-        conn.close()
-        # Log prediction
-        log_prediction(data.features, prediction)
-        return {"prediction": int(prediction)}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    logging.info(f"Incoming prediction request data: {data}")
+    with REQUEST_LATENCY.labels(endpoint='/predict').time():
+        REQUEST_COUNT.labels(endpoint='/predict').inc()# Increment request counter
+        start_time = time.time()
+        try:
+            # Convert input to DataFrame
+            input_df = pd.DataFrame([data.features], columns=[
+                'sepal length (cm)', 'sepal width (cm)', 
+                'petal length (cm)', 'petal width (cm)'
+            ])
+            prediction = model.predict(input_df)[0]
+            conn = sqlite3.connect('logs/predictions.db')
+            c= conn.cursor()
+            c.execute("INSERT INTO predictions (timestamp, features, prediction) VALUES (?, ?, ?)",
+                        (datetime.now().isoformat(), str(data.features), prediction))
+            conn.commit()
+            conn.close()
+            end_time = time.time()
+            PREDICTION_LATENCY.observe(end_time - start_time) # Observe prediction latency
+            # Log prediction
+            logging.info(f"Prediction: {prediction}, Features: {data.features}")
+            log_prediction(data.features, prediction)
+            return {"prediction": int(prediction)}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/")
 async def root():
