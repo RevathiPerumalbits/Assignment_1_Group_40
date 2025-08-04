@@ -1,6 +1,6 @@
 #!/bin/bash
-docker pull revathiperumalbits/iris-mlops-api:latest
-docker run -d -p 8000:8000 revathiperumalbits/iris-mlops-api:latest
+docker pull 2023ad05044/iris-mlops-api:latest
+docker run -d -p 8000:8000 2023ad05044/iris-mlops-api:latest
 echo "Iris MLOps API is running on port 8000"
 echo "You can access the API at http://localhost:8000"
 echo "To stop the container, use 'docker stop <container_id>'"
