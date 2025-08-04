@@ -95,7 +95,7 @@ jobs:
     - name: Test API and log prediction
       run: |
         sleep 5  # Wait for container to start
-        docker exec iris-api curl -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}' > prediction.json
+        docker exec iris-api curl -v -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}' > prediction.json
         echo "Raw prediction.json output:"
         cat prediction.json
         python -c "import json; import pandas as pd; import os; from datetime import datetime; data = json.load(open('prediction.json')); log_entry = {'timestamp': datetime.now().isoformat(), 'features': [5.1, 3.5, 1.4, 0.2], 'prediction': data['prediction']}; log_df = pd.DataFrame([log_entry]); os.makedirs('logs', exist_ok=True); log_df.to_csv('logs/predictions.csv', index=False)"
