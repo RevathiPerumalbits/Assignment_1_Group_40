@@ -7,7 +7,7 @@ import pandas as pd
 from typing import List
 import os
 import glob
-from prometheus_client import Counter, Histogram,make_asgi_app
+from prometheus_client import Counter,generate_latest, Histogram,make_asgi_app
 import sqlite3
 import logging
 import time

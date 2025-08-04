@@ -25,15 +25,6 @@ if ! command -v pip >/dev/null 2>&1; then
   echo "Error: pip not found. Please install pip."
   exit 1
 fi
-pip install flake8 pytest >/dev/null 2>&1
-if ! command -v flake8 >/dev/null 2>&1; then
-  echo "Error: flake8 not found. Installing..."
-  pip install flake8
-fi
-if ! command -v pytest >/dev/null 2>&1; then
-  echo "Error: pytest not found. Installing..."
-  pip install pytest
-fi
 
 
 
