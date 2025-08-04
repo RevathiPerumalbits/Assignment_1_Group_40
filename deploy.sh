@@ -5,8 +5,8 @@
 DOCKER_IMAGE="2023ad05044/iris-mlops-api:latest"
 CONTAINER_NAME="iris-mlops-api"
 PORT="8000"
-DOCKERHUB_USERNAME="2023ad05044"
-DOCKERHUB_TOKEN=""
+DOCKERHUB_USERNAME="$1"
+DOCKERHUB_TOKEN="$2"
 
 # Validate inputs
 if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
