@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
+flake8 src/ --config=.flake8
 COPY src/ ./src/
 COPY saved_models/ ./saved_models/
 COPY mlruns.db .
