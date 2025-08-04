@@ -6,7 +6,7 @@ DOCKER_IMAGE="2023ad05044/iris-mlops-api:latest"
 CONTAINER_NAME="iris-mlops-api"
 PORT="8000"
 DOCKERHUB_USERNAME="2023ad05044"
-DOCKERHUB_TOKEN="dckr_pat_7XwXICrPyGFKN9aYUFB4TlWEKE4"
+DOCKERHUB_TOKEN=""
 
 # Validate inputs
 if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
@@ -50,13 +50,13 @@ sleep 5
 
 # Test the API endpoints
 echo "Testing /predict endpoint..."
-curl -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}'|| echo "Predict endpoint test failed"
+docker exec iris-mlops-api curl -v -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}'|| echo "Predict endpoint test failed"
 
 echo "Testing /metrics endpoint..."
-curl "http://localhost:8000/metrics" || echo "Metrics endpoint test failed"
+docker exec iris-mlops-api curl -v "http://localhost:8000/metrics" || echo "Metrics endpoint test failed"
 
 echo "Testing /prometheus endpoint..."
-curl "http://localhost:8000/prometheus" || echo "Prometheus endpoint test failed"
+docker exec iris-mlops-api curl -v "http://localhost:8000/prometheus" || echo "Prometheus endpoint test failed"
 
 echo "Deployment completed. API is running on http://localhost:8000"
 
