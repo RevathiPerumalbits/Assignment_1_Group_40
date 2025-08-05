@@ -109,11 +109,11 @@ jobs:
     # Test metrics endpoint
     - name: Test metrics endpoint
       run: |
-        docker exec iris-mlops-api curl http://localhost:8000/metrics
+        curl http://localhost:8000/metrics
         # Test Prometheus endpoint
     - name: Test Prometheus endpoint
       run: |
-        docker exec iris-mlops-api curl http://localhost:8000/prometheus
+        curl http://localhost:8000/prometheus
     # Upload prediction logs as artifact
     - name: Upload prediction logs
       uses: actions/upload-artifact@v4
