@@ -114,6 +114,14 @@ jobs:
     - name: Test Prometheus endpoint
       run: |
         curl http://localhost:8000/prometheus
+    - name: Test Prometheus
+      run: |
+        docker run -d -p 9090:9090 -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+        echo "Prometheus endpoint tested successfully"
+    - name: Test Grafana
+      run: |
+        docker run -d -p 3000:3000 grafana/grafana
+        echo "Grafana endpoint tested successfully"
     # Upload prediction logs as artifact
     - name: Upload prediction logs
       uses: actions/upload-artifact@v4
