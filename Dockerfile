@@ -12,7 +12,7 @@ COPY .flake8 .
 COPY src/ ./src/
 COPY saved_models/ ./saved_models/
 # Run flake8 linting during build
-RUN flake8 src/ --config=.flake8 --output-file=flake8-report.txt || { cat flake8-report.txt; exit 1; }
+RUN flake8 src/ --config=.flake8 --output-file=flake8-report.txt
 COPY mlruns.db .
 RUN mkdir -p /app/logs && chmod -R 777 /app/logs
 
