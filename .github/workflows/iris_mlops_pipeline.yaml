@@ -102,6 +102,10 @@ jobs:
         curl -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}' > prediction.json
         echo "Raw prediction.json output:"
         cat prediction.json
+    - name: Test Schema Validation
+      run: |
+        docker exec iris-mlops-api curl -v -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, -1.4, 0.2]}" 
+        echo "Invalid input test passed"
     - name: Log prediction result
       run: |
         python src/log_prediction.py

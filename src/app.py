@@ -11,6 +11,7 @@ from prometheus_client import Counter,generate_latest, Histogram,make_asgi_app
 import sqlite3
 import logging
 import time
+from .models import IrisFeatures
 app = FastAPI()
 
 # Load the registered model
@@ -73,7 +74,7 @@ def init_db():
 
 init_db()
 @app.post("/predict")
-async def predict(data: IrisInput):
+async def predict(data: IrisFeatures):
     logging.info(f"Incoming prediction request data: {data}")
     with REQUEST_LATENCY.labels(endpoint='/predict').time():
         REQUEST_COUNT.labels(endpoint='/predict').inc()# Increment request counter
