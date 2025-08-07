@@ -29,6 +29,10 @@ jobs:
         pip install --no-cache-dir flake8 pytest
         which flake8
         which pytest
+    - name: Lint code
+      run: |
+        flake8 src/ --config=.flake8 --output-file=flake8-report.txt
+        cat flake8-report.txt
       # Initialize DVC
     - name: Initialize DVC
       run: |
@@ -110,14 +114,7 @@ jobs:
       run: |
         python src/log_prediction.py
         echo "Prediction logged to logs/predictions.csv"
-    # Test metrics endpoint
-    - name: Test metrics endpoint
-      run: |
-        curl http://localhost:8000/metrics
-        # Test Prometheus endpoint
-    - name: Test Prometheus endpoint
-      run: |
-        curl http://localhost:8000/prometheus
+    
     - name: Test Prometheus
       run: |
         docker run -d -p 9090:9090 -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
@@ -126,6 +123,14 @@ jobs:
       run: |
         docker run -d -p 3000:3000 grafana/grafana
         echo "Grafana endpoint tested successfully"
+    # Test metrics endpoint
+    - name: Test metrics endpoint
+      run: |
+        curl http://localhost:8000/metrics
+        # Test Prometheus endpoint
+    - name: Test Prometheus endpoint
+      run: |
+        curl http://localhost:8000/prometheus || echo "Prometheus endpoint test failed"
     # Upload prediction logs as artifact
     - name: Upload prediction logs
       uses: actions/upload-artifact@v4

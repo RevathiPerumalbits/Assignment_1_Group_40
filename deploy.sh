@@ -1,6 +1,6 @@
-```bash
 #!/bin/bash
-
+set -x
+echo "Startng deployment script..."
 # Configuration
 DOCKER_IMAGE="2023ad05044/iris-mlops-api:latest"
 CONTAINER_NAME="iris-mlops-api"
@@ -25,9 +25,15 @@ if ! command -v pip >/dev/null 2>&1; then
   echo "Error: pip not found. Please install pip."
   exit 1
 fi
-
-
-
+# Run linting and tests
+echo "Running flake8 and pytest..."
+flake8 src/ --config=.flake8 --output-file=flake8-report.txt
+if [ $? -ne 0 ]; then
+  echo "Error: flake8 linting failed"
+  cat flake8-report.txt
+  exit 1
+fi
+cat flake8-report.txt
 # Check if port is available
 if command -v netstat >/dev/null 2>&1; then
   if netstat -aon | grep -q ":$PORT "; then
@@ -78,13 +84,12 @@ sleep 5
 
 # Check for curl and python3 in container
 echo "Checking container dependencies..."
-docker exec $CONTAINER_NAME which curl >/dev/null 2>&1 || { echo "Error: curl not found in container"; exit 1; }
-docker exec $CONTAINER_NAME python3 -c "import pandas" >/dev/null 2>&1 || { echo "Error: python3 or pandas not found in container"; exit 1; }
+python -c "import pandas" >/dev/null 2>&1 || { echo "Error: python or pandas not found in container"; exit 1; }
 
 docker logs $CONTAINER_NAME
 # Test the API endpoints
 echo "Testing /predict endpoint..."
-docker exec $CONTAINER_NAME curl -v -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}" > prediction.json
+curl -X POST "http://localhost:8000/predict" -H "Content-Type: application/json" -d '{"features": [5.1, 3.5, 1.4, 0.2]}' > prediction.json
 if [ $? -ne 0 ]; then
   echo "Predict endpoint test failed"
   exit 1
@@ -94,17 +99,19 @@ cat prediction.json
 
 # Log prediction to CSV
 echo "Logging prediction to CSV..."
-docker exec $CONTAINER_NAME python3 -c "import json; import pandas as pd; import os; from datetime import datetime; data = json.load(open('prediction.json')); log_entry = {'timestamp': datetime.now().isoformat(), 'features': [5.1, 3.5, 1.4, 0.2], 'prediction': data['prediction']}; log_df = pd.DataFrame([log_entry]); os.makedirs('logs', exist_ok=True); log_df.to_csv('logs/predictions.csv', index=False)"
+python -c "import json; import pandas as pd; import os; from datetime import datetime; data = json.load(open('prediction.json')); log_entry = {'timestamp': datetime.now().isoformat(), 'features': [5.1, 3.5, 1.4, 0.2], 'prediction': data['prediction']}; log_df = pd.DataFrame([log_entry]); os.makedirs('logs', exist_ok=True); log_df.to_csv('logs/predictions.csv', index=False)"
 if [ $? -ne 0 ]; then
   echo "Failed to log prediction to CSV"
   exit 1
 fi
 
 echo "Testing /metrics endpoint..."
-docker exec $CONTAINER_NAME curl -v "http://localhost:8000/metrics" || echo "Metrics endpoint test failed"
+curl "http://localhost:8000/metrics" || echo "Metrics endpoint test failed"
 
 echo "Testing /prometheus endpoint..."
-docker exec $CONTAINER_NAME curl -v "http://localhost:8000/prometheus" || echo "Prometheus endpoint test failed"
+curl "http://localhost:8000/prometheus" || echo "Prometheus endpoint test failed"
+
+docker run -d -p 9090:9090 -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+docker run -d -p 3000:3000 grafana/grafana
 
 echo "Deployment completed. API is running on http://localhost:$PORT"
-```

@@ -1,35 +1,47 @@
 # src/api.py
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-import mlflow.sklearn
-from datetime import datetime
-import pandas as pd
-from typing import List
-import os
 import glob
-from prometheus_client import Counter,generate_latest, Histogram,make_asgi_app
-import sqlite3
 import logging
+import os
+import sqlite3
 import time
+from datetime import datetime
+from typing import List
+
+import mlflow.sklearn
+import pandas as pd
+from fastapi import FastAPI, HTTPException
+from prometheus_client import Counter, Histogram, make_asgi_app
+from pydantic import BaseModel, Field
+
 from .models import IrisFeatures
+
 app = FastAPI()
 
 # Load the registered model
-#model = mlflow.sklearn.load_model("models:/IrisBestModel/1")
-#model = mlflow.sklearn.load_model("saved_model")
+# model = mlflow.sklearn.load_model("models:/IrisBestModel/1")
+# model = mlflow.sklearn.load_model("saved_model")
 # Prometheus metrics
-REQUEST_COUNT = Counter('iris_api_requests_total', 'Total API requests', ['endpoint'])
-REQUEST_LATENCY = Histogram('iris_api_request_latency_seconds', 'Request latency', ['endpoint'])
+REQUEST_COUNT = Counter("iris_api_requests_total", "Total API requests", ["endpoint"])
+REQUEST_LATENCY = Histogram(
+    "iris_api_request_latency_seconds", "Request latency", ["endpoint"]
+)
 
 # Define Prometheus metrics
 
-PREDICTION_LATENCY = Histogram('prediction_latency_seconds', 'Prediction Latency in seconds', buckets=(0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0))
+PREDICTION_LATENCY = Histogram(
+    "prediction_latency_seconds",
+    "Prediction Latency in seconds",
+    buckets=(0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0),
+)
+
 
 # Load the latest version of the registered model
 def load_latest_model():
     try:
         client = mlflow.tracking.MlflowClient()
-        latest_versions = client.get_latest_versions("IrisBestModel", stages=["Production"])
+        latest_versions = client.get_latest_versions(
+            "IrisBestModel", stages=["Production"]
+        )
         if not latest_versions:
             raise ValueError("No versions found for model 'IrisBestModel'")
         latest_version = latest_versions[0]
@@ -46,11 +58,18 @@ def load_latest_model():
             raise ValueError(f"No model files found in {model_dir}")
         latest_model_path = max(model_paths, key=os.path.getmtime)
         return mlflow.sklearn.load_model(os.path.dirname(latest_model_path))
-    
+
 
 model = load_latest_model()
+
+
 class IrisInput(BaseModel):
-    features: List[float] = Field(..., min_items=4, max_items=4, description="Four Iris features: sepal length, sepal width, petal length, petal width")
+    features: List[float] = Field(
+        ...,
+        min_items=4,
+        max_items=4,
+        description="Four Iris features: sepal length, sepal width, petal length, petal width",
+    )
 
     # Custom validation for positive floats
     @classmethod
@@ -64,36 +83,52 @@ class IrisInput(BaseModel):
                 raise ValueError("All features must be positive numbers")
         return value
 
+
 def init_db():
-    conn = sqlite3.connect('logs/predictions.db')
+    conn = sqlite3.connect("logs/predictions.db")
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS predictions
-                 (timestamp TEXT, features TEXT, prediction INTEGER)''')
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS predictions
+                 (timestamp TEXT, features TEXT, prediction INTEGER)"""
+    )
     conn.commit()
     conn.close()
 
+
 init_db()
+
+
 @app.post("/predict")
 async def predict(data: IrisFeatures):
     logging.info(f"Incoming prediction request data: {data}")
-    with REQUEST_LATENCY.labels(endpoint='/predict').time():
-        REQUEST_COUNT.labels(endpoint='/predict').inc()# Increment request counter
+    with REQUEST_LATENCY.labels(endpoint="/predict").time():
+        # Increment request counter
+        REQUEST_COUNT.labels(endpoint="/predict").inc()
         start_time = time.time()
         try:
             # Convert input to DataFrame
-            input_df = pd.DataFrame([data.features], columns=[
-                'sepal length (cm)', 'sepal width (cm)', 
-                'petal length (cm)', 'petal width (cm)'
-            ])
+            input_df = pd.DataFrame(
+                [data.features],
+                columns=[
+                    "sepal length (cm)",
+                    "sepal width (cm)",
+                    "petal length (cm)",
+                    "petal width (cm)",
+                ],
+            )
             prediction = model.predict(input_df)[0]
-            conn = sqlite3.connect('logs/predictions.db')
-            c= conn.cursor()
-            c.execute("INSERT INTO predictions (timestamp, features, prediction) VALUES (?, ?, ?)",
-                        (datetime.now().isoformat(), str(data.features), prediction))
+            conn = sqlite3.connect("logs/predictions.db")
+            c = conn.cursor()
+            c.execute(
+                "INSERT INTO predictions (timestamp, features, prediction) VALUES (?, ?, ?)",
+                (datetime.now().isoformat(), str(data.features), prediction),
+            )
             conn.commit()
             conn.close()
             end_time = time.time()
-            PREDICTION_LATENCY.observe(end_time - start_time) # Observe prediction latency
+            PREDICTION_LATENCY.observe(
+                end_time - start_time
+            )  # Observe prediction latency
             # Log prediction
             logging.info(f"Prediction: {prediction}, Features: {data.features}")
             log_prediction(data.features, prediction)
@@ -101,36 +136,44 @@ async def predict(data: IrisFeatures):
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
+
 @app.get("/")
 async def root():
     return {"message": "Iris Classification API"}
+
+
 @app.get("/metrics")
 async def get_metrics():
-    with REQUEST_LATENCY.labels(endpoint='/metrics').time():
-        REQUEST_COUNT.labels(endpoint='/metrics').inc()
-        conn = sqlite3.connect('logs/predictions.db')
+    with REQUEST_LATENCY.labels(endpoint="/metrics").time():
+        REQUEST_COUNT.labels(endpoint="/metrics").inc()
+        conn = sqlite3.connect("logs/predictions.db")
         logs = pd.read_sql_query("SELECT * FROM predictions", conn)
         conn.close()
         return {
             "total_predictions": len(logs),
-            "avg_prediction": logs['prediction'].mean() if not logs.empty else 0.0
+            "avg_prediction": logs["prediction"].mean() if not logs.empty else 0.0,
         }
+
+
 def log_prediction(features, prediction):
     import datetime
     import os
+
     log_entry = {
-        'timestamp': datetime.datetime.now().isoformat(),
-        'features': features,
-        'prediction': prediction
+        "timestamp": datetime.datetime.now().isoformat(),
+        "features": features,
+        "prediction": prediction,
     }
     log_df = pd.DataFrame([log_entry])
-    
+
     # Append to CSV log
-    log_file = 'logs/predictions.csv'
-    os.makedirs('logs', exist_ok=True)
+    log_file = "logs/predictions.csv"
+    os.makedirs("logs", exist_ok=True)
     if os.path.exists(log_file):
-        log_df.to_csv(log_file, mode='a', header=False, index=False)
+        log_df.to_csv(log_file, mode="a", header=False, index=False)
     else:
         log_df.to_csv(log_file, index=False)
+
+
 # Mount Prometheus metrics endpoint
 app.mount("/prometheus", make_asgi_app())
