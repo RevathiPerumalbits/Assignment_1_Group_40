@@ -35,7 +35,7 @@ jobs:
       # Initialize DVC
     - name: Initialize DVC
       run: |
-        dvc init --no-scm
+        dvc init --no-scm -f
         dvc add data/raw/iris.csv
         dvc repro
         ls -a .dvc
